@@ -12,10 +12,15 @@ export default defineConfig({
   testDir,
   fullyParallel: true,
   reporter: 'html',
+  /* CI environment par test retry karega agar fail ho */
+  retries: process.env.CI ? 1 : 0,
   use: {
     // .env se BASE_URL padhega, fallback URL amazon.com rakha hai
     baseURL: process.env.BASE_URL || 'https://www.amazon.com',
-    headless: false,
+    
+    // Local par browser khulega, GitHub CI par headless chalega
+    headless: process.env.CI ? true : false,
+    
     trace: 'on-first-retry',
   },
 
