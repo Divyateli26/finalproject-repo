@@ -45,3 +45,5 @@ Then('Shopping Cart page display hona chahiye', async ({ page }) => {
   const amazonPage = new AmazonPage(page);
   await amazonPage.verifyCartPage();
 });
+
+//ok
