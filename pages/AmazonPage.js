@@ -1,6 +1,6 @@
-const { expect } = require('@playwright/test');
+import { expect } from '@playwright/test';
 
-class AmazonPage {
+export class AmazonPage {
   /**
    * @param {import('@playwright/test').Page} page
    */
@@ -18,17 +18,19 @@ class AmazonPage {
   // --- Page Actions / Methods ---
 
   async openUrl(url) {
-    await this.page.goto(url);
-    await this.page.waitForLoadState('domcontentloaded');
+    // Fast load ke liye domcontentloaded wait strategy
+    await this.page.goto(url, { waitUntil: 'domcontentloaded' });
   }
 
   async searchProduct(productName) {
+    // CI par element visible hone ka wait karega
+    await this.searchBox.waitFor({ state: 'visible', timeout: 15000 });
     await this.searchBox.fill(productName);
     await this.searchButton.click();
   }
 
   async verifySearchResultsVisible() {
-    await expect(this.searchResults.first()).toBeVisible();
+    await expect(this.searchResults.first()).toBeVisible({ timeout: 15000 });
   }
 
   async verifyPageTitleContains(keyword) {
@@ -37,8 +39,13 @@ class AmazonPage {
   }
 
   async clickNavigationLink(linkText) {
-    await this.page.keyboard.press('Escape');
-    const navLink = this.page.locator('#nav-xshop').getByRole('link', { name: linkText, exact: false }).first();
+    await this.page.keyboard.press('Escape'); // Popups close karne ke liye
+    const navLink = this.page
+      .locator('#nav-xshop')
+      .getByRole('link', { name: linkText, exact: false })
+      .first();
+
+    await navLink.waitFor({ state: 'visible', timeout: 15000 });
     await navLink.click({ force: true });
   }
 
@@ -48,14 +55,13 @@ class AmazonPage {
   }
 
   async clickCartIcon() {
+    await this.cartIcon.waitFor({ state: 'visible', timeout: 15000 });
     await this.cartIcon.click();
   }
 
   async verifyCartPage() {
     await this.page.waitForLoadState('domcontentloaded');
     expect(this.page.url().toLowerCase()).toContain('cart');
-    await expect(this.cartHeading).toBeVisible();
+    await expect(this.cartHeading).toBeVisible({ timeout: 15000 });
   }
 }
-
-module.exports = { AmazonPage };
