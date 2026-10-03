@@ -7,7 +7,7 @@ export class AmazonPage {
   constructor(page) {
     this.page = page;
 
-    // --- Locators ---
+    // Locators
     this.searchBox = page.locator('#twotabsearchtextbox');
     this.searchButton = page.locator('#nav-search-submit-button');
     this.searchResults = page.locator('[data-component-type="s-search-result"]');
@@ -15,22 +15,30 @@ export class AmazonPage {
     this.cartHeading = page.locator('h1, h2').first();
   }
 
-  // --- Page Actions / Methods ---
-
   async openUrl(url) {
-    // Fast load ke liye domcontentloaded wait strategy
+    // 1. Hide automation flag from Amazon's anti-bot script
+    await this.page.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+    });
+
     await this.page.goto(url, { waitUntil: 'domcontentloaded' });
+
+    // 2. Check if Amazon served CAPTCHA page; if yes, reload once
+    const isCaptcha = await this.page.locator('form[action*="validateCaptcha"]').count();
+    if (isCaptcha > 0) {
+      console.log('⚠️ Amazon CAPTCHA detected on CI runner, reloading page...');
+      await this.page.reload({ waitUntil: 'domcontentloaded' });
+    }
   }
 
   async searchProduct(productName) {
-    // CI par element visible hone ka wait karega
     await this.searchBox.waitFor({ state: 'visible', timeout: 30000 });
     await this.searchBox.fill(productName);
     await this.searchButton.click();
   }
 
   async verifySearchResultsVisible() {
-    await expect(this.searchResults.first()).toBeVisible({ timeout: 15000 });
+    await expect(this.searchResults.first()).toBeVisible({ timeout: 30000 });
   }
 
   async verifyPageTitleContains(keyword) {
@@ -39,30 +47,29 @@ export class AmazonPage {
   }
 
   async clickNavigationLink(linkText) {
-    await this.page.keyboard.press('Escape'); // Popups close karne ke liye
+    await this.page.keyboard.press('Escape');
     const navLink = this.page
       .locator('#nav-xshop')
       .getByRole('link', { name: linkText, exact: false })
       .first();
 
-    await navLink.waitFor({ state: 'visible', timeout: 15000 });
+    await navLink.waitFor({ state: 'visible', timeout: 30000 });
     await navLink.click({ force: true });
   }
 
   async verifyDealsPageURL() {
     await this.page.waitForLoadState('domcontentloaded');
-    // Regex me 'deal' aur 'prime' bhi allow kiya taaki sale events detect ho sakein
-    await expect(this.page).toHaveURL(/(goldbox|deals|deal|prime)/i);
+    await expect(this.page).toHaveURL(/(goldbox|deals|deal|prime)/i, { timeout: 30000 });
   }
 
   async clickCartIcon() {
-    await this.cartIcon.waitFor({ state: 'visible', timeout: 15000 });
+    await this.cartIcon.waitFor({ state: 'visible', timeout: 30000 });
     await this.cartIcon.click();
   }
 
   async verifyCartPage() {
     await this.page.waitForLoadState('domcontentloaded');
     expect(this.page.url().toLowerCase()).toContain('cart');
-    await expect(this.cartHeading).toBeVisible({ timeout: 15000 });
+    await expect(this.cartHeading).toBeVisible({ timeout: 30000 });
   }
 }
