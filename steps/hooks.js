@@ -1,4 +1,4 @@
-const { createBdd } = require('playwright-bdd');
+import { createBdd } from 'playwright-bdd';
 
 const { Before, After } = createBdd();
 
@@ -14,15 +14,19 @@ After(async ({ page, $testInfo }) => {
 
   // Agar test FAIL hota hai toh screenshot HTML Report me attach karein
   if ($testInfo.status !==$testInfo.expectedStatus) {
-    // Screenshot Buffer capture karein
-    const screenshot = await page.screenshot({ fullPage: true });
+    try {
+      // Screenshot Buffer capture karein
+      const screenshot = await page.screenshot({ fullPage: true });
 
-    // Playwright HTML Report ke andar attach karein
-    await $testInfo.attach('Failed Scenario Screenshot', {
-      body: screenshot,
-      contentType: 'image/png',
-    });
+      // Playwright HTML Report ke andar attach karein
+      await $testInfo.attach('Failed Scenario Screenshot', {
+        body: screenshot,
+        contentType: 'image/png',
+      });
 
-    console.log('📸 Failure screenshot attached to HTML Report!');
+      console.log('📸 Failure screenshot attached to HTML Report!');
+    } catch (error) {
+      console.log('⚠️ Could not capture screenshot:', error.message);
+    }
   }
 });
