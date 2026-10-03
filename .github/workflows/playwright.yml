@@ -2,7 +2,7 @@ name: Playwright BDD Tests Pipeline
 
 on:
   push:
-    branches: [ main, master ]  # Sirf tab chalega jab main branch par code merge/push hoga
+    branches: [ main, master ]
 
 jobs:
   test:
@@ -27,8 +27,9 @@ jobs:
     - name: Generate BDD Specs
       run: npx bddgen
 
+    # Xvfb Virtual Display ke andar Headed mode me tests run karein
     - name: Execute Playwright BDD Tests
-      run: npx playwright test
+      run: xvfb-run npx playwright test
       env:
         BASE_URL: ${{ secrets.BASE_URL || 'https://www.amazon.com' }}
 
