@@ -27,9 +27,8 @@ jobs:
     - name: Generate BDD Specs
       run: npx bddgen
 
-    # Xvfb Virtual Display ke andar Headed mode me tests run karein
     - name: Execute Playwright BDD Tests
-      run: xvfb-run npx playwright test
+      run: npx playwright test
       env:
         BASE_URL: ${{ secrets.BASE_URL || 'https://www.amazon.com' }}
 

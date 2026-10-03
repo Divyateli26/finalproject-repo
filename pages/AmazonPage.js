@@ -16,19 +16,7 @@ export class AmazonPage {
   }
 
   async openUrl(url) {
-    // 1. Hide automation flag from Amazon's anti-bot script
-    await this.page.addInitScript(() => {
-      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-    });
-
     await this.page.goto(url, { waitUntil: 'domcontentloaded' });
-
-    // 2. Check if Amazon served CAPTCHA page; if yes, reload once
-    const isCaptcha = await this.page.locator('form[action*="validateCaptcha"]').count();
-    if (isCaptcha > 0) {
-      console.log('⚠️ Amazon CAPTCHA detected on CI runner, reloading page...');
-      await this.page.reload({ waitUntil: 'domcontentloaded' });
-    }
   }
 
   async searchProduct(productName) {
