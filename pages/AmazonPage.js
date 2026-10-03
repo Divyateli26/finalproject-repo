@@ -24,7 +24,7 @@ export class AmazonPage {
 
   async searchProduct(productName) {
     // CI par element visible hone ka wait karega
-    await this.searchBox.waitFor({ state: 'visible', timeout: 15000 });
+    await this.searchBox.waitFor({ state: 'visible', timeout: 30000 });
     await this.searchBox.fill(productName);
     await this.searchButton.click();
   }
