@@ -51,7 +51,8 @@ export class AmazonPage {
 
   async verifyDealsPageURL() {
     await this.page.waitForLoadState('domcontentloaded');
-    await expect(this.page).toHaveURL(/(goldbox|deals)/i);
+    // Regex me 'deal' aur 'prime' bhi allow kiya taaki sale events detect ho sakein
+    await expect(this.page).toHaveURL(/(goldbox|deals|deal|prime)/i);
   }
 
   async clickCartIcon() {
