@@ -10,20 +10,19 @@ const testDir = defineBddConfig({
 
 export default defineConfig({
   testDir,
-  fullyParallel: true,
+  // CI par single worker se rate-limiting nahi hogi
+  workers: process.env.CI ? 1 : undefined,
+  fullyParallel: false,
   reporter: 'html',
-  
-  // Timeout 60 seconds kar diya
   timeout: 60 * 1000,
-  
   retries: process.env.CI ? 1 : 0,
-  
+
   use: {
     baseURL: process.env.BASE_URL || 'https://www.amazon.com',
     headless: process.env.CI ? true : false,
     trace: 'on-first-retry',
-    
-    // Real browser User-Agent & Headers
+    actionTimeout: 30000,
+    navigationTimeout: 30000,
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     extraHTTPHeaders: {
       'accept-language': 'en-US,en;q=0.9',
@@ -34,7 +33,16 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: [
+            '--disable-blink-features=AutomationControlled',
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
+          ]
+        }
+      },
     },
   ],
 });
